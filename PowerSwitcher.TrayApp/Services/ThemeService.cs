@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Runtime.Versioning;
+using System.Windows;
 using System.Windows.Media;
 
 namespace PowerSwitcher.TrayApp.Services
@@ -6,6 +7,8 @@ namespace PowerSwitcher.TrayApp.Services
     ////
     //  Code heavily inspired by https://github.com/File-New-Project/EarTrumpet/blob/master/EarTrumpet/Services/ThemeService.cs
     ////
+
+    [SupportedOSPlatform("windows")]
     public class ThemeService
     {
         public static bool IsWindowTransparencyEnabled

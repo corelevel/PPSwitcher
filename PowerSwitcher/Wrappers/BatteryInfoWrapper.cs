@@ -1,28 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace PowerSwitcher.Wrappers
 {
+    [SupportedOSPlatform("windows")]
     public class BatteryInfoWrapper : IDisposable
     {
-        Microsoft.Win32.PowerModeChangedEventHandler powerChangedDelegate = null;
+        readonly Microsoft.Win32.PowerModeChangedEventHandler powerChangedDelegate = null;
+
         public BatteryInfoWrapper(Action<PowerPlugStatus> powerStatusChangedFunc)
         {
             powerChangedDelegate = (sender, e) => { powerStatusChangedFunc(GetCurrentChargingStatus()); };
             Microsoft.Win32.SystemEvents.PowerModeChanged += powerChangedDelegate;
         }
 
-        public PowerPlugStatus GetCurrentChargingStatus()
+        public static PowerPlugStatus GetCurrentChargingStatus()
         {
             PowerStatus pwrStatus = SystemInformation.PowerStatus;
             return (pwrStatus.PowerLineStatus == PowerLineStatus.Online) ? PowerPlugStatus.Online : PowerPlugStatus.Offline;
         }
 
-        public int GetChargeValue()
+        public static int GetChargeValue()
         {
             PowerStatus pwrStatus = SystemInformation.PowerStatus;
             return pwrStatus.BatteryLifeRemaining / 60;
@@ -58,7 +57,5 @@ namespace PowerSwitcher.Wrappers
             //GC.SuppressFinalize(this); //No destructor so isn't required yet
         }
         #endregion
-
-
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Versioning;
 
 
 namespace PowerSwitcher
@@ -22,10 +23,10 @@ namespace PowerSwitcher
         void SetPowerSchema(Guid guid);
     }
 
+    [SupportedOSPlatform("windows")]
     public class PowerManager : ObservableObject, IPowerManager
     {
-        Win32PowSchemasWrapper powerWraper;
-        BatteryInfoWrapper batteryWrapper;
+        readonly BatteryInfoWrapper batteryWrapper;
 
         public ObservableCollection<IPowerSchema> Schemas{ get; private set; }
         public IPowerSchema CurrentSchema { get; private set; }
@@ -34,28 +35,27 @@ namespace PowerSwitcher
 
         public PowerManager()
         {
-            powerWraper = new Win32PowSchemasWrapper();
-            batteryWrapper = new BatteryInfoWrapper(powerChangedEvent);
+            batteryWrapper = new BatteryInfoWrapper(PowerChangedEvent);
 
-            Schemas = new ObservableCollection<IPowerSchema>();
+            Schemas = [];
 
-            powerChangedEvent(batteryWrapper.GetCurrentChargingStatus());
+            PowerChangedEvent(BatteryInfoWrapper.GetCurrentChargingStatus());
             UpdateSchemas();
         }
 
         public void UpdateSchemas()
         {
-            var currSchemaGuid = powerWraper.GetActiveGuid();
-            var newSchemas = powerWraper.GetCurrentSchemas();
+            var currSchemaGuid = Win32PowSchemasWrapper.GetActiveGuid();
+            var newSchemas = Win32PowSchemasWrapper.GetCurrentSchemas();
 
             //Add and update new / changed schemas
             foreach (var newSchema in newSchemas)
             {
                 var originalSchema = Schemas.FirstOrDefault(sch => sch.Guid == newSchema.Guid);
-                if (originalSchema == null) { insertNewSchema(newSchemas, newSchema); originalSchema = newSchema; }
+                if (originalSchema == null) { InsertNewSchema(newSchemas, newSchema); originalSchema = newSchema; }
                
                 if (newSchema.Guid == currSchemaGuid && originalSchema?.IsActive != true)
-                { setNewCurrSchema(originalSchema); }
+                { SetNewCurrSchema(originalSchema); }
                 
                 if (originalSchema?.Name != newSchema.Name)
                 { ((PowerSchema)originalSchema).Name = newSchema.Name; }
@@ -63,7 +63,7 @@ namespace PowerSwitcher
 
             if(!Schemas.Any(sch => currSchemaGuid == sch.Guid))
             {
-                noSchemaIsActive();
+                NoSchemaIsActive();
             }
 
             //remove old schemas
@@ -76,7 +76,7 @@ namespace PowerSwitcher
             schemasToBeRemoved.ForEach(sch => Schemas.Remove(sch));
         }
 
-        private void noSchemaIsActive()
+        private void NoSchemaIsActive()
         {
             var oldActive = Schemas.FirstOrDefault(sch => sch.IsActive);
             if (oldActive != null)
@@ -88,13 +88,13 @@ namespace PowerSwitcher
             }
         }
 
-        private void insertNewSchema(List<PowerSchema> newSchemas, PowerSchema newSchema)
+        private void InsertNewSchema(List<PowerSchema> newSchemas, PowerSchema newSchema)
         {
             var insertToIndex = Math.Min(newSchemas.IndexOf(newSchema), Schemas.Count);
             Schemas.Insert(insertToIndex, newSchema);
         }
 
-        private void setNewCurrSchema(IPowerSchema newActiveSchema)
+        private void SetNewCurrSchema(IPowerSchema newActiveSchema)
         {
             var oldActiveSchema = Schemas.FirstOrDefault(sch => sch.IsActive);
 
@@ -113,11 +113,15 @@ namespace PowerSwitcher
 
         public void SetPowerSchema(Guid guid)
         {
-            try { powerWraper.SetActiveGuid(guid); } catch (PowerSwitcherWrappersException) { }
+            try
+            {
+                Win32PowSchemasWrapper.SetActiveGuid(guid);
+            }
+            catch (PowerSwitcherWrappersException) { }
             UpdateSchemas();
         }
 
-        private void powerChangedEvent(PowerPlugStatus newStatus)
+        private void PowerChangedEvent(PowerPlugStatus newStatus)
         {
             if(newStatus == CurrentPowerStatus) { return; }
 

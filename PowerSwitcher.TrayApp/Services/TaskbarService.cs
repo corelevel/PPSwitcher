@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 ////
@@ -9,14 +10,15 @@ using System.Windows.Forms;
 ////
 namespace PowerSwitcher.TrayApp.Services
 {
+    [SupportedOSPlatform("windows")]
     public sealed class TaskbarService
     {
         private const string ClassName = "Shell_TrayWnd";
 
         public static TaskbarState GetWinTaskbarState()
         {
-            APPBARDATA ABD = new APPBARDATA();
-            TaskbarState retState = new TaskbarState();
+            APPBARDATA ABD = new();
+            TaskbarState retState = new();
             var hwnd = User32.FindWindow(ClassName, null);
 
             ABD.cbSize = Marshal.SizeOf(ABD);
@@ -24,8 +26,7 @@ namespace PowerSwitcher.TrayApp.Services
             ABD.hWnd = hwnd;
             ABD.lParam = 1;
 
-            RECT scaledTaskbarRect;
-            User32.GetWindowRect(hwnd, out scaledTaskbarRect);
+            User32.GetWindowRect(hwnd, out RECT scaledTaskbarRect);
 
             var taskbarNonDPIAwareSize = Shell32.SHAppBarMessage((int)ABMsg.ABM_GETTASKBARPOS, ref ABD);
 
@@ -63,13 +64,14 @@ namespace PowerSwitcher.TrayApp.Services
         }
     }
 
-    public static class User32
+    public static partial class User32
     {
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+        [LibraryImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
     }
 
     [StructLayout(LayoutKind.Sequential)]

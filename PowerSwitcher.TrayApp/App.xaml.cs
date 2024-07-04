@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Windows;
 
@@ -13,6 +14,8 @@ namespace PowerSwitcher.TrayApp
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
+
+    [SupportedOSPlatform("windows")]
     public partial class App : Application
     {
         public HotKeyService HotKeyManager { get; private set; }
@@ -23,6 +26,7 @@ namespace PowerSwitcher.TrayApp
         public ConfigurationInstance<PowerSwitcherSettings> Configuration { get; private set; }
 
         private Mutex _mMutex;
+
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             if (!tryToCreateMutex()) return;

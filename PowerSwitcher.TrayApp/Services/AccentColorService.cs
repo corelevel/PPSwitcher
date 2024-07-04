@@ -7,20 +7,20 @@ namespace PowerSwitcher.TrayApp.Services
     ////
     //  Code heavily inspired by https://github.com/File-New-Project/EarTrumpet/blob/master/EarTrumpet/Services/AccentColorService.cs
     ////
-    public static class AccentColorService
+    public static partial class AccentColorService
     {
-        static class Interop
+        static partial class Interop
         {
             // Thanks, Quppa! -RR
 
-            [DllImport("uxtheme.dll", EntryPoint = "#94", CharSet = CharSet.Unicode)]
-            internal static extern int GetImmersiveColorSetCount();
+            [LibraryImport("uxtheme.dll", EntryPoint = "#94")]
+            internal static partial int GetImmersiveColorSetCount();
 
-            [DllImport("uxtheme.dll", EntryPoint = "#95", CharSet = CharSet.Unicode)]
-            internal static extern uint GetImmersiveColorFromColorSetEx(uint dwImmersiveColorSet, uint dwImmersiveColorType, bool bIgnoreHighContrast, uint dwHighContrastCacheMode);
+            [LibraryImport("uxtheme.dll", EntryPoint = "#95")]
+            internal static partial uint GetImmersiveColorFromColorSetEx(uint dwImmersiveColorSet, uint dwImmersiveColorType, [MarshalAs(UnmanagedType.Bool)] bool bIgnoreHighContrast, uint dwHighContrastCacheMode);
 
-            [DllImport("uxtheme.dll", EntryPoint = "#96", CharSet = CharSet.Unicode)]
-            internal static extern uint GetImmersiveColorTypeFromName(string name);
+            [LibraryImport("uxtheme.dll", EntryPoint = "#96", StringMarshalling = StringMarshalling.Utf16)]
+            internal static partial uint GetImmersiveColorTypeFromName(string name);
 
             [DllImport("uxtheme.dll", EntryPoint = "#98", CharSet = CharSet.Unicode)]
             internal static extern uint GetImmersiveUserColorSetPreference(bool bForceCheckRegistry, bool bSkipCheckOnFail);

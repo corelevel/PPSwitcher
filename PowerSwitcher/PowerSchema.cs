@@ -16,23 +16,45 @@ namespace PowerSwitcher
     public class PowerSchema : ObservableObject, IPowerSchema
     {
         public Guid Guid { get; }
-
-        string name;
-        public string Name{get{return name;} set { if (name == value) { return; } name = value; RaisePropertyChangedEvent(nameof(Name)); } }
-
+        private string name = null!;
         bool isActive;
-        public bool IsActive {
-            get { return isActive; }
-            set { if (isActive == value) { return; } isActive = value; RaisePropertyChangedEvent(nameof(IsActive)); }
+
+        public string Name
+        {
+            get => name;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value, nameof(value));
+                if (name == value)
+                {
+                    return;
+                }
+                name = value;
+                RaisePropertyChangedEvent(nameof(Name));
+            }
         }
 
-        public PowerSchema(string name, Guid guid) : this(name, guid, false) { }
+        public bool IsActive
+        {
+            get => isActive;
+            set
+            {
+                if (isActive == value)
+                {
+                    return;
+                }
+                isActive = value;
+                RaisePropertyChangedEvent(nameof(IsActive));
+            }
+        }
+
+        public PowerSchema(string name, Guid guid) : this(name, guid, false) {}
 
         public PowerSchema(string name, Guid guid, bool isActive)
         {
-            this.Name = name;
-            this.Guid = guid;
-            this.IsActive = isActive;
+            Name = name;
+            Guid = guid;
+            IsActive = isActive;
         }
 
         public override string ToString()

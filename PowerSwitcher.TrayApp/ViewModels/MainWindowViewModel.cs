@@ -4,9 +4,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.Versioning;
 
 namespace PowerSwitcher.TrayApp.ViewModels
 {
+    [SupportedOSPlatform("windows")]
     public class MainWindowViewModel : ObservableObject
     {
         private IPowerManager pwrManager;
@@ -41,13 +43,12 @@ namespace PowerSwitcher.TrayApp.ViewModels
         {
             if (e.PropertyName == nameof(PowerSwitcherSettings.ShowOnlyDefaultSchemas))
             {
-                updateOnlyDefaultSchemasSetting();
+                UpdateOnlyDefaultSchemasSetting();
             }
         }
 
-        private void updateOnlyDefaultSchemasSetting()
+        private void UpdateOnlyDefaultSchemasSetting()
         {
-
             (Schemas as ObservableCollectionWhereSwitchableShim<ObservableCollection<IPowerSchema>, IPowerSchema>).FilterOn = config.Data.ShowOnlyDefaultSchemas;
         }
 

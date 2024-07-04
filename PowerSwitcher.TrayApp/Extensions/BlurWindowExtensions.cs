@@ -1,6 +1,7 @@
 ﻿using PowerSwitcher.TrayApp.Services;
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -9,12 +10,14 @@ namespace PowerSwitcher.TrayApp.Extensions
     ////
     //  Code heavily inspired by https://github.com/File-New-Project/EarTrumpet/blob/master/EarTrumpet/Extensions/BlurWindowExtensions.cs
     ////
-    static class BlurWindowExtensions
+
+    [SupportedOSPlatform("windows")]
+    static partial class BlurWindowExtensions
     {
-        static class Interop
+        static partial class Interop
         {
-            [DllImport("user32.dll")]
-            internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttribData data);
+            [LibraryImport("user32.dll")]
+            internal static partial int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttribData data);
 
             [StructLayout(LayoutKind.Sequential)]
             internal struct WindowCompositionAttribData
@@ -81,19 +84,23 @@ namespace PowerSwitcher.TrayApp.Extensions
         {
             var windowHelper = new WindowInteropHelper(window);
 
-            var accent = new Interop.AccentPolicy();
-            accent.AccentState = accentState;
-            accent.AccentFlags = GetAccentFlagsForTaskbarPosition();
+            var accent = new Interop.AccentPolicy
+            {
+                AccentState = accentState,
+                AccentFlags = GetAccentFlagsForTaskbarPosition()
+            };
 
             var accentStructSize = Marshal.SizeOf(accent);
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
 
-            var data = new Interop.WindowCompositionAttribData();
-            data.Attribute = Interop.WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
+            var data = new Interop.WindowCompositionAttribData
+            {
+                Attribute = Interop.WindowCompositionAttribute.WCA_ACCENT_POLICY,
+                SizeOfData = accentStructSize,
+                Data = accentPtr
+            };
 
             Interop.SetWindowCompositionAttribute(windowHelper.Handle, ref data);
 
