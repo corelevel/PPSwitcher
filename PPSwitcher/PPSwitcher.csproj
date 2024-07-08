@@ -1,14 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <Nullable>disable</Nullable>
-	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<TargetFramework>net8.0-windows</TargetFramework>
 	<OutputType>Library</OutputType>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-	<AssemblyTitle>Petrroll.Helpers</AssemblyTitle>
-	<Product>Petrroll.Helpers</Product>
-	<Copyright>Copyright ©  2016</Copyright>
-	<AssemblyVersion>1.0.0.0</AssemblyVersion>
-	<FileVersion>1.0.0.0</FileVersion>
+	<UseWindowsForms>true</UseWindowsForms>
+	<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseAndPackage|AnyCPU'">
+	<OutputPath>bin\ReleaseAndPackage\</OutputPath>
+	<Optimize>true</Optimize>
+	<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 	<NoWarn>1701;1702</NoWarn>
@@ -21,5 +24,9 @@
   <ItemGroup>
 	<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 	<PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+	<PackageReference Include="System.Management" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+	<ProjectReference Include="..\Petrroll.Helpers\Petrroll.Helpers.csproj" />
   </ItemGroup>
 </Project>

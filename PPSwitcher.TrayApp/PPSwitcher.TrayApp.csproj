@@ -1,0 +1,88 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<Nullable>enable</Nullable>
+	<TargetFramework>net8.0-windows</TargetFramework>
+	<OutputType>WinExe</OutputType>
+	<PublishUrl>publish\</PublishUrl>
+	<Install>true</Install>
+	<InstallFrom>Disk</InstallFrom>
+	<UpdateEnabled>false</UpdateEnabled>
+	<UpdateMode>Foreground</UpdateMode>
+	<UpdateInterval>7</UpdateInterval>
+	<UpdateIntervalUnits>Days</UpdateIntervalUnits>
+	<UpdatePeriodically>false</UpdatePeriodically>
+	<UpdateRequired>false</UpdateRequired>
+	<MapFileExtensions>true</MapFileExtensions>
+	<ApplicationRevision>0</ApplicationRevision>
+	<ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+	<IsWebBootstrapper>false</IsWebBootstrapper>
+	<UseApplicationTrust>false</UseApplicationTrust>
+	<BootstrapperEnabled>true</BootstrapperEnabled>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	<UseWindowsForms>true</UseWindowsForms>
+	<UseWPF>true</UseWPF>
+	<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<OutputPath>..\Build\Debug\</OutputPath>
+	<NoWarn>1701;1702</NoWarn>
+	<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<OutputPath>..\Build\Release\</OutputPath>
+	<NoWarn>1701;1702</NoWarn>
+	<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+	<ApplicationIcon>Tray.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseAndPackage|AnyCPU'">
+	<OutputPath>..\Build\Release\</OutputPath>
+	<Optimize>true</Optimize>
+	<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+	<AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+	<ProjectReference Include="..\PPSwitcher\PPSwitcher.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+	<Resource Include="Tray.ico" />
+  </ItemGroup>
+  <ItemGroup>
+	<BootstrapperPackage Include=".NETFramework,Version=v4.5">
+	  <Visible>False</Visible>
+	  <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+	  <Install>true</Install>
+	</BootstrapperPackage>
+	<BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+	  <Visible>False</Visible>
+	  <ProductName>.NET Framework 3.5 SP1</ProductName>
+	  <Install>false</Install>
+	</BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+	<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+	<PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <PropertyGroup>
+	<WindowsKitsRoot>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot10', null, RegistryView.Registry32, RegistryView.Default))</WindowsKitsRoot>
+	<WindowsKitsRoot Condition="'$(WindowsKitsRoot)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot', null, RegistryView.Registry32, RegistryView.Default))</WindowsKitsRoot>
+	<WindowsSDKTools Condition=" '$(WindowsSDKTools)' == '' And '$(Platform)' == 'AnyCPU' ">$(WindowsKitsRoot)bin\x64\</WindowsSDKTools>
+	<WindowsSDKTools Condition="'$(WindowsSDKTools)' == ''">$(WindowsKitsRoot)bin\$(Platform)\</WindowsSDKTools>
+  </PropertyGroup>
+  <PropertyGroup>
+	<PostBuildEvent>PATH %25PATH%25$(WindowsSDKTools);
+if "$(ConfigurationName)" == "ReleaseAndPackage" (
+cd $(SolutionDir)PPSwitcher.Appx
+.\PackageScript.bat
+)
+
+</PostBuildEvent>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+</Project>

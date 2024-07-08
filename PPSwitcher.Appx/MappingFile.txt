@@ -1,0 +1,8 @@
+[Files]
+"..\Build\Release\PPSwitcher.TrayApp.exe"		"PPSwitcher.TrayApp.exe"
+"..\Build\Release\PPSwitcher.dll"				"PPSwitcher.dll"
+"..\Build\Release\Petrroll.Helpers.dll"				"Petrroll.Helpers.dll"
+"..\PPSwitcher.Assets\tile_150x150.png"			"Assets\Square150x150Logo.png"
+"..\PPSwitcher.Assets\tile_50x50.png"			"Assets\StoreLogo50x50.png"
+"..\PPSwitcher.Assets\tile_44x44.png"			"Assets\Square44x44Logo.png"
+"AppxManifest.xml"									"AppxManifest.xml"
