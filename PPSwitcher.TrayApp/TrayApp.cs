@@ -14,8 +14,8 @@ namespace PPSwitcher.TrayApp
 	public class TrayApp
 	{
 		#region PrivateObjects
-		readonly NotifyIcon _trayIcon;
-		public event Action ShowFlyout;
+		readonly NotifyIcon trayIcon;
+		public event Action? ShowFlyout;
 		readonly IPowerManager pwrManager;
 		readonly ConfigurationInstance<PPSwitcherSettings> configuration;
 		#endregion
@@ -28,18 +28,22 @@ namespace PPSwitcher.TrayApp
 
 			configuration = config;
 
-			_trayIcon = new NotifyIcon();
-			_trayIcon.MouseClick += TrayIcon_MouseClick;
+			trayIcon = new NotifyIcon();
+			trayIcon.MouseClick += TrayIcon_MouseClick;
 
-			_trayIcon.Icon = new System.Drawing.Icon(System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PPSwitcher.TrayApp;component/Tray.ico")).Stream, SystemInformation.SmallIconSize);
-			_trayIcon.Text = string.Concat(AppStrings.AppName);
-			_trayIcon.Visible = true;
+			trayIcon.Icon = new System.Drawing.Icon(System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PPSwitcher.TrayApp;component/Tray.ico")).Stream, SystemInformation.SmallIconSize);
+			trayIcon.Text = string.Concat(AppStrings.AppName);
+			trayIcon.Visible = true;
 
 			if (System.Windows.Application.Current is App a)
 			{
 				if (a.MainWindow is MainWindow w)
 					ShowFlyout += w.ToggleWindowVisibility;
+				else
+					throw new Exception();
 			}
+			else
+				throw new Exception();
 			//ShowFlyout += (((App)System.Windows.Application.Current).MainWindow as MainWindow).ToggleWindowVisibility;
 
 			//Run automatic on-off-AC change at boot
@@ -51,7 +55,7 @@ namespace PPSwitcher.TrayApp
 			var contextMenuRoot = new ContextMenuStrip();
 			contextMenuRoot.Opened += ContextMenu_Popup;
 
-			_trayIcon.ContextMenuStrip = contextMenuRoot;
+			trayIcon.ContextMenuStrip = contextMenuRoot;
 
 			var contextMenuRootItems = contextMenuRoot.Items;
 			contextMenuRootItems.Add("-");
@@ -78,12 +82,17 @@ namespace PPSwitcher.TrayApp
 			onlyDefaultSchemasItem.Click += OnlyDefaultSchemas_Click;
 
 			var enableShortcutsToggleItem = contextMenuRootItems.Add($"{AppStrings.ToggleOnShowrtcutSwitch} ({configuration.Data.ShowOnShortcutKeyModifier} + {configuration.Data.ShowOnShortcutKey})");
-			enableShortcutsToggleItem.Enabled = !(System.Windows.Application.Current as App).HotKeyFailed;
+			if (System.Windows.Application.Current is App a)
+				enableShortcutsToggleItem.Enabled = !a.HotKeyFailed;
 			if (configuration.Data.ShowOnShortcutSwitch) enableShortcutsToggleItem.Select();
 			enableShortcutsToggleItem.Click += EnableShortcutsToggleItem_Click;
 
-			var aboutItem = contextMenuRootItems.Add($"{AppStrings.About} ({Assembly.GetEntryAssembly().GetName().Version})");
-			aboutItem.Click += About_Click;
+			var asm = Assembly.GetEntryAssembly();
+			if (asm != null)
+			{
+				var aboutItem = contextMenuRootItems.Add($"{AppStrings.About} ({asm.GetName().Version})");
+				aboutItem.Click += About_Click;
+			}
 
 			var exitItem = contextMenuRootItems.Add(AppStrings.Exit);
 			exitItem.Click += Exit_Click;
@@ -111,7 +120,10 @@ namespace PPSwitcher.TrayApp
 
 				configuration.Data.ShowOnShortcutSwitch = !configuration.Data.ShowOnShortcutSwitch;
 				enableShortcutsToggleItem.Checked = configuration.Data.ShowOnShortcutSwitch;
-				enableShortcutsToggleItem.Enabled = !(System.Windows.Application.Current as App).HotKeyFailed;
+				if (System.Windows.Application.Current is App a)
+					enableShortcutsToggleItem.Enabled = !a.HotKeyFailed;
+
+//				enableShortcutsToggleItem.Enabled = !(System.Windows.Application.Current as App).HotKeyFailed;
 
 				configuration.Save();
 			}
@@ -129,7 +141,6 @@ namespace PPSwitcher.TrayApp
 				configuration.Save();
 			}
 		}
-
 		private void OnlyDefaultSchemas_Click(object? sender, EventArgs e)
 		{
 			if (sender != null)
@@ -142,7 +153,6 @@ namespace PPSwitcher.TrayApp
 				configuration.Save();
 			}
 		}
-
 		private void AutomaticSwitchItem_Click(object? sender, EventArgs e)
 		{
 			if (sender != null)
@@ -157,7 +167,6 @@ namespace PPSwitcher.TrayApp
 				configuration.Save();
 			}
 		}
-
 		#endregion
 
 		#region AutomaticOnACSwitchRelated
@@ -185,10 +194,10 @@ namespace PPSwitcher.TrayApp
 					break;
 			}
 
-			IPowerScheme schemaToSwitchTo = pwrManager.Schemas.FirstOrDefault(sch => sch.Guid == schemaGuidToSwitch);
-			if(schemaToSwitchTo == null) { return; }
+//			IPowerScheme schemaToSwitchTo = pwrManager.Schemas.FirstOrDefault(sch => sch.Guid == schemaGuidToSwitch);
+//			if(schemaToSwitchTo == null) { return; }
 
-			pwrManager.SetPowerScheme(schemaToSwitchTo);
+//			pwrManager.SetPowerScheme(schemaToSwitchTo);
 		}
 
 		#endregion
@@ -235,15 +244,16 @@ namespace PPSwitcher.TrayApp
 
 		private void ClearPowerSchemasInTray()
 		{
-			for (int i = _trayIcon.ContextMenuStrip.Items.Count - 1; i >= 0; i--)
+			/*
+			for (int i = trayIcon.ContextMenuStrip.Items.Count - 1; i >= 0; i--)
 			{
-				var item = _trayIcon.ContextMenuStrip.Items[i];
+				var item = trayIcon.ContextMenuStrip.Items[i];
 				if (item.Name.StartsWith("pwrScheme", StringComparison.Ordinal))
 				{
-					_trayIcon.ContextMenuStrip.Items.Remove(item);
+					trayIcon.ContextMenuStrip.Items.Remove(item);
 				}
 			}
-
+			*/
 			//_trayIcon.ContextMenuStrip.Items["settings"].Items["settingsOffAC"].MenuItems.Clear();
 			//_trayIcon.ContextMenuStrip.Items["settings"].Items["settingsOnAC"].MenuItems.Clear();
 		}
@@ -295,8 +305,8 @@ namespace PPSwitcher.TrayApp
 
 		void Exit_Click(object? sender, EventArgs e)
 		{
-			_trayIcon.Visible = false;
-			_trayIcon.Dispose();
+			trayIcon.Visible = false;
+			trayIcon.Dispose();
 
 			pwrManager.Dispose();
 

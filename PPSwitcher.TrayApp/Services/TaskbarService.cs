@@ -14,12 +14,17 @@ namespace PPSwitcher.TrayApp.Services
 	public sealed class TaskbarService
 	{
 		private const string TASK_BAR_CLASS_NAME = "Shell_TrayWnd";
+		private const int ABM_GETTASKBARPOS = 5;
 
 		public static TaskbarState GetWinTaskbarState()
 		{
 			APPBARDATA ABD = new();
 			TaskbarState retState = new();
-			var hwnd = User32.FindWindow(TASK_BAR_CLASS_NAME, null);
+			var hwnd = User32.FindWindowW(TASK_BAR_CLASS_NAME, null);
+			if (hwnd == IntPtr.Zero)
+			{
+				throw new Exception();
+			}
 
 			ABD.cbSize = Marshal.SizeOf(ABD);
 			ABD.uEdge = 0;
@@ -28,7 +33,7 @@ namespace PPSwitcher.TrayApp.Services
 
 			User32.GetWindowRect(hwnd, out RECT scaledTaskbarRect);
 
-			var taskbarNonDPIAwareSize = Shell32.SHAppBarMessage((int)ABMsg.ABM_GETTASKBARPOS, ref ABD);
+			var taskbarNonDPIAwareSize = Shell32.SHAppBarMessage(ABM_GETTASKBARPOS, ref ABD);
 
 			var scalingAmount = (double)(scaledTaskbarRect.bottom - scaledTaskbarRect.top) / (ABD.rc.bottom - ABD.rc.top);
 
@@ -63,16 +68,19 @@ namespace PPSwitcher.TrayApp.Services
 			return retState;
 		}
 	}
-
 	public static partial class User32
 	{
 		[LibraryImport("user32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
-		public static partial IntPtr FindWindow(string lpClassName, string? lpWindowName);
+		public static partial IntPtr FindWindowW(string lpClassName, string? lpWindowName);
 		[LibraryImport("user32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static partial bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 	}
-
+	public static partial class Shell32
+	{
+		[LibraryImport("shell32.dll")]
+		public static partial IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
+	}
 	[StructLayout(LayoutKind.Sequential)]
 	public struct RECT
 	{
@@ -81,13 +89,6 @@ namespace PPSwitcher.TrayApp.Services
 		public int right;
 		public int bottom;
 	}
-
-	public static partial class Shell32
-	{
-		[LibraryImport("shell32.dll")]
-		public static partial IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
-	}
-
 	[StructLayout(LayoutKind.Sequential)]
 	public struct APPBARDATA
 	{
@@ -98,37 +99,12 @@ namespace PPSwitcher.TrayApp.Services
 		public RECT rc;
 		public int lParam;
 	}
-
-	public enum ABMsg
-	{
-		ABM_NEW = 0,
-		ABM_REMOVE,
-		ABM_QUERYPOS,
-		ABM_SETPOS,
-		ABM_GETSTATE,
-		ABM_GETTASKBARPOS,
-		ABM_ACTIVATE,
-		ABM_GETAUTOHIDEBAR,
-		ABM_SETAUTOHIDEBAR,
-		ABM_WINDOWPOSCHANGED,
-		ABM_SETSTATE
-	}
-
-	public enum ABEdge
-	{
-		ABE_LEFT = 0,
-		ABE_TOP = 1,
-		ABE_RIGHT = 2,
-		ABE_BOTTOM = 3
-	}
-
 	[StructLayout(LayoutKind.Sequential)]
 	public struct TaskbarState
 	{
 		public TaskbarPosition TaskbarPosition;
 		public RECT TaskbarSize;
 	}
-
 	public enum TaskbarPosition
 	{
 		Top,

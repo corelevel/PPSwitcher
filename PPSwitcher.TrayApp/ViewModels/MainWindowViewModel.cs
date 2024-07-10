@@ -19,7 +19,6 @@ namespace PPSwitcher.TrayApp.ViewModels
 			get { return pwrManager.CurrentSchema; }
 			set { if (value != null && !value.IsActive) { pwrManager.SetPowerScheme(value); } }
 		}
-
 		public MainWindowViewModel()
 		{
 			if (System.Windows.Application.Current is not App currApp) { return; }
@@ -36,7 +35,6 @@ namespace PPSwitcher.TrayApp.ViewModels
 				config.Data.ShowOnlyDefaultSchemas
 				);
 		}
-
 		private void SettingsData_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(PPSwitcherSettings.ShowOnlyDefaultSchemas))
@@ -44,10 +42,10 @@ namespace PPSwitcher.TrayApp.ViewModels
 				UpdateOnlyDefaultSchemasSetting();
 			}
 		}
-
 		private void UpdateOnlyDefaultSchemasSetting()
 		{
-			(Schemas as ObservableCollectionWhereSwitchableShim<ObservableCollection<IPowerScheme>, IPowerScheme>).FilterOn = config.Data.ShowOnlyDefaultSchemas;
+			if (Schemas is ObservableCollectionWhereSwitchableShim<ObservableCollection<IPowerScheme>, IPowerScheme> s)
+				s.FilterOn = config.Data.ShowOnlyDefaultSchemas;
 		}
 
 		private void PwrManager_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
